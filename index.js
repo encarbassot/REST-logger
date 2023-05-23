@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const {title,c} = require("./beautyConsole")
 
 const app = express();
-const PORT = 3000;
+const PORT = 3005;
 const PROXY_URL = "http://localhost:3001";
 
 const proxy = axios.create({
@@ -29,7 +29,7 @@ app.all('*', async (req, res) => {
       
       const conf = {headers: req.headers};
       
-      const {data, status, headers} = await proxy[req.method.toLowerCase()](req.originalUrl, req.body);
+      const {data, status, headers} = await   proxy[req.method.toLowerCase()](req.originalUrl, req.body);
       response = data;
       
       console.log(c("yellow") + title("RESPONSE") + c("reset") )
@@ -46,7 +46,7 @@ app.all('*', async (req, res) => {
     const elapsedStr = `${endTime - startTime}ms`;
 
 
-    console.log(c("yellow") + title("END") + elapsedStr + c("reset") )
+    console.log(c("yellow") + title("END "+elapsedStr ) + c("reset") )
 
     res.send(response);
   } catch (err) {
@@ -72,6 +72,7 @@ app.listen(PORT, () => {
   console.log(c("yellow",title(`API running at:`)))
   console.log(c("yellow",`- Local:   ${localUrl}`))
   console.log(c("yellow",`- Network: ${networkUrl}`));
+  console.log(c("yellow",title()))
 
 
 });
