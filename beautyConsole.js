@@ -76,3 +76,138 @@ module.exports = {
 }
 
 
+/**
+ * 
+ * @param {string[][]} mat 
+ * @param {{
+    outerBox: boolean;
+    separatorHeader: boolean;
+    separatorAll: boolean;
+  }} options 
+ * @returns 
+ */
+function createAsciiTable(mat,options,borders){
+  const OPT={
+    outerBox:false,
+    separatorHeader:true,
+    separatorAll:false,
+    paddingH:0,
+    paddingV:0,
+    headerColor:undefined,
+    cellColor:undefined,
+    borderColor:undefined,
+    autoConsoleLog:true,
+    ...options
+  }
+  let result = ""
+  const BORDERS={
+    tl:"╔",
+    tc:"╦",
+    tr:"╗",
+    cl:"╠",
+    cc:"╬",
+    cr:"╣",
+    bl:"╚",
+    bc:"╩",
+    br:"╝",
+    v:"║",
+    h:"═",
+    ...borders
+  }
+
+
+  if (OPT.borderColor) {
+    for (const key in BORDERS) {
+      BORDERS[key] = c(OPT.borderColor,BORDERS[key]);
+    }
+  }
+
+  const padh = " ".repeat(OPT.paddingH)
+
+  if (mat.length === 0) return
+  if(!mat.every(line=>Array.isArray(line))) return
+
+  const maxLineLength = mat.reduce((acc,v)=>Math.max(acc,v.length),0)
+
+  const columLengths = Array.from({length:maxLineLength}).fill(0)
+
+  for(let i=0;i<mat.length;i++){ //fila 
+    for(let j=0;j<mat[i].length;j++){//columna
+      const str = mat[i][j]
+      if(columLengths[j] < str.length){
+        columLengths[j] = str.length
+      }
+    }
+  }
+
+  const getLineSeparator = (cl=BORDERS.cl,cc=BORDERS.cc,cr=BORDERS.cr)=> {
+    const l = OPT.outerBox?cl:""
+    const r = OPT.outerBox?cr:""
+    return l + columLengths.map(x=>BORDERS.h.repeat(x + OPT.paddingH*2)).join(cc) + r
+  }
+
+  //PRINT THE TABLE
+
+  //outerbox top line
+  if(OPT.outerBox){
+    result+=getLineSeparator(BORDERS.tl,BORDERS.tc,BORDERS.tr) + "\n"
+  }
+
+  for(let i=0;i<mat.length;i++){ //fila 
+
+    //outerbox left
+    if(OPT.outerBox){
+      result+=BORDERS.v
+    }
+
+    for(let j=0;j<mat[i].length;j++){//columna
+      const str = mat[i][j]
+      const endPad = columLengths[j] - str.length
+      
+      //cell
+      let content = padh + str + " ".repeat(endPad) + padh
+      if(i===0 && OPT.headerColor){
+        content = c(OPT.headerColor,content)
+      }else if(OPT.cellColor){
+        content = c(OPT.cellColor,content)
+      } 
+      result += content
+
+      //cell separator
+      if(j<mat[i].length-1){
+        result += BORDERS.v
+      }
+
+    }
+
+    //outerbox right
+    if(OPT.outerBox){
+      result+=BORDERS.v
+    }
+
+    //line separator
+    if(
+      (i<mat.length-1 && OPT.separatorAll) ||  //separator between all lines
+      (i===0 && OPT.separatorHeader && mat.length>1)  //separator only for header
+    ){
+      result += "\n" + getLineSeparator()
+    }
+
+    //line break
+    result+="\n"
+  }
+
+  //outerbox bottom
+  if(OPT.outerBox){
+    result+=getLineSeparator(BORDERS.bl,BORDERS.bc,BORDERS.br)
+  }
+
+
+  if(OPT.autoConsoleLog){
+    console.log(result)
+  }
+  return result
+}
+
+
+
